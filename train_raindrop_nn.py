@@ -11,6 +11,7 @@ ToDo: add more layers and check the performance of the network.
 
 Created on Tue Jan 18 14:19:41 2022
 """
+from os.path import join
 
 import torch 
 import torch.nn as nn
@@ -63,9 +64,10 @@ def accuracy(loader, model):
 
 
 # Load labeled dataset and split into traning and test set
+root_dir = "/Users/bhupendra/projects/camera_raindrops/data/train_data/"
+
 dataset = DropContaminationData(csv_file="labels.csv", 
-                       root_dir="/Users/bhupendra/projects/camera_raindrops/data/train_data/",
-                       transform=transforms.ToTensor())
+                       root_dir=root_dir, transform=transforms.ToTensor())
 
 data_len = len(dataset)
 train_len = int(data_len/2)
@@ -74,7 +76,7 @@ train_data, test_data = random_split(dataset, [train_len, test_len]) #720 data p
 
 
 #Hyperparameters for Perceptraon
-input_size = 360*360*3 #np.prod(shape)
+input_size = 360*360*3
 num_classes = 4
 learning_rate = 0.001
 batch_size = 50
@@ -115,6 +117,9 @@ test_accu = accuracy(test_loader, model)
 
 print(f'Training accuracy = {train_accu:.0f} % \n Testing accuracy = {test_accu:.0f} %')
 
+save_dir= '/Users/bhupendra/projects/camera_raindrops/pt_models/'
+path_nn = join(save_dir, "perceptron_4class.pt")
+torch.save(model.state_dict(), path_nn)
 
 
 
