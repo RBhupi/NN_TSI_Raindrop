@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
+""" Training and testing a Perceptron network to identify the state of the TSI
+camera mirror dome. 
+0:clear view of clouds, 
+1:blocked by raindrops 
+2:snow covered
+3:clear mirror, no clouds
+
+ToDo: add more layers and check the performance of the network.
+
 Created on Tue Jan 18 14:19:41 2022
 """
 
