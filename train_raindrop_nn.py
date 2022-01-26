@@ -15,7 +15,7 @@ from torch.utils.data import random_split, DataLoader
 from TSIData import DropContaminationData
 
 class Perceptron(nn.Module):
-    """creates network"""
+    """Creates network"""
     
     def __init__(self, input_size, num_classes):
         super(Perceptron, self).__init__()
@@ -27,6 +27,31 @@ class Perceptron(nn.Module):
         tensor_out = self.hidden_layer(tensor_act)
         return tensor_out
 
+
+
+def accuracy(loader, model):
+    """Function to test acuracy in testing mode."""
+    
+    num_correct = 0 
+    num_samples = 0
+    model.eval()
+    
+    with torch.no_grad():
+        for x, y in loader:
+            x=x.to(device=device)
+            y=y.to(device=device)
+            x=x.reshape(x.shape[0], -1)
+            
+            scores = model(x)
+            
+            _, preds = scores.max(1)
+            num_correct += (preds==y).sum()
+            num_samples += preds.size(0)
+            
+        acc = float(num_correct)/float(num_samples)*100
+        
+        return acc
+        
 
 
 # Load labeled dataset and split into traning and test set
@@ -65,45 +90,20 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 for epoch in range(num_epochs):
     for index, (data, targets) in enumerate(train_loader):
         optimizer.zero_grad()
-        data = data.to(device=device)
         
+        data = data.to(device=device)
         data = data.reshape(data.shape[0], -1)
         
         scores = model(data)
         loss = criterion(scores, targets)
-        
         loss.backward()
-        
         optimizer.step()
         
 
 
-def check_accuracy(loader, model):
-    num_correct = 0 
-    num_samples = 0
-    model.eval()
-    
-    with torch.no_grad():
-        for x, y in loader:
-            x=x.to(device=device)
-            y=y.to(device=device)
-            x=x.reshape(x.shape[0], -1)
-            
-            scores = model(x)
-            
-            _, preds = scores.max(1)
-            num_correct += (preds==y).sum()
-            num_samples += preds.size(0)
-            
-        acc = float(num_correct)/float(num_samples)*100
-        
-        return acc
-        
-
-
-
-train_accu = check_accuracy(train_loader, model)
-test_accu = check_accuracy(test_loader, model)
+#Testing on both datasets
+train_accu = accuracy(train_loader, model)
+test_accu = accuracy(test_loader, model)
 
 print(f'Training accuracy = {train_accu:.0f} % \n Testing accuracy = {test_accu:.0f} %')
 
