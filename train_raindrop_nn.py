@@ -21,7 +21,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import random_split, DataLoader
 
 
-from TSIData import DropContaminationData
+from DropContaminationData import LabeledData 
 
 class Perceptron(nn.Module):
     """Creates network"""
@@ -35,7 +35,6 @@ class Perceptron(nn.Module):
         tensor_act = F.relu(self.input_layer(tensor_in))
         tensor_out = self.hidden_layer(tensor_act)
         return tensor_out
-
 
 
 def accuracy(loader, model):
@@ -64,23 +63,24 @@ def accuracy(loader, model):
 
 
 # Load labeled dataset and split into traning and test set
-root_dir = "/Users/bhupendra/projects/camera_raindrops/data/train_data/"
+root_dir = "/Users/bhupendra/projects/camera_raindrops/data/sage-training/training_data/"
 
-dataset = DropContaminationData(csv_file="labels.csv", 
+dataset = LabeledData(csv_file="labels.csv", 
                        root_dir=root_dir, transform=transforms.ToTensor())
 
 data_len = len(dataset)
-train_len = int(data_len/2)
+train_len = int(data_len*0.75)
 test_len = int(data_len-train_len)
 train_data, test_data = random_split(dataset, [train_len, test_len]) #720 data points
 
 
-#Hyperparameters for Perceptraon
-input_size = 360*360*3
-num_classes = 4
+
+#Hyperparameters for Perceptron
+input_size = 2048*2048*3 #360*360*3
+num_classes = 3
 learning_rate = 0.001
 batch_size = 50
-num_epochs = 2
+num_epochs = 5
 
 
 train_loader = DataLoader(dataset=train_data, batch_size=batch_size, shuffle=True)
@@ -109,16 +109,17 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
         
+    #Testing on both datasets
+    train_accu = accuracy(train_loader, model) 
+    test_accu = accuracy(test_loader, model)
+    print(f'Epoch {epoch}: Training accuracy = {train_accu:.0f}%, Testing accuracy = {test_accu:.0f}%')
+        
 
 
-#Testing on both datasets
-train_accu = accuracy(train_loader, model)
-test_accu = accuracy(test_loader, model)
 
-print(f'Training accuracy = {train_accu:.0f} % \n Testing accuracy = {test_accu:.0f} %')
 
 save_dir= '/Users/bhupendra/projects/camera_raindrops/pt_models/'
-path_nn = join(save_dir, "perceptron_4class.pt")
+path_nn = join(save_dir, "perceptron_3class_1HL.pt")
 torch.save(model.state_dict(), path_nn)
 
 
